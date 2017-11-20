@@ -1,11 +1,14 @@
 ---
-title: "MTDE Clustering Exercise"
+title: "BloodPAC: MTDE Clustering Exercise"
 output:
   html_document:
     css: custom.css
     highlight: zenburn
     theme: lumen
 ---
+## Goal
+
+To answer the question: "which projects have the most similar MTDE submissions?"
 
 ## Environment Prep
 
@@ -65,6 +68,7 @@ tsvs <- c("table_hours_to_fractionation.tsv",
           "table_composition.tsv", 
           "table_blood_tube_type.tsv")
 
+# removes project for which there are established projects but no submission.
 remove <- c("MSKCC_P0001_T1", "PersonalGenome_Beta1", "Novartis_Contrived2_T1")
 
 # get dfs for each MTDE
@@ -102,24 +106,12 @@ SelectAndCombine <- function(list) {
     df <- data[,-1]
     df
 }
-
 ```
 
-## Generate MTDE Combinations
+## Prep
 
 ```{r}
-comboList <- list()
-for (i in 3:10) {
-    named <- paste0("combo", i)
-    l <- combn(mtde, i)
-    comboList[[named]] <- l
-}
-## expected N choose K result
-#str(comboList)
-```
-
-```{r}
-data <- SelectAndCombine(comboList$combo10[,1])
+data <- SelectAndCombine(mtde)
 ```
 
 ## Jaccard Distance - Binarize
@@ -129,6 +121,7 @@ d <- as.matrix(dist(data, method="binary"))
 datatable(d)
 ```
 
+## Visualize
 
 ```{r, message=F, warning=F}
 set.seed(15)
