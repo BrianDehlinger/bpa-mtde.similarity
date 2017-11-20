@@ -1,0 +1,147 @@
+---
+title: "MTDE Clustering Exercise"
+output:
+  html_document:
+    css: custom.css
+    highlight: zenburn
+    theme: lumen
+---
+
+## Environment Prep
+
+```{r, message=FALSE}
+if (!require('plyr')) install.packages('plyr')
+if (!require('ggfortify')) install.packages('ggfortify')
+if (!require('pheatmap')) install.packages('pheatmap')
+if (!require('grid')) install.packages('grid')
+if (!require('DT')) install.packages('DT')
+source('credentials.R')
+```
+
+## Data Prep
+
+### Helper:   Get Counts TSVS for each MTDE
+
+```{r}
+GetTsvHelper <- function(tsv, remove) {
+    # gets tsvs from MTDE matrix using https credentials
+    #
+    # Args: 
+    #   tsv:  name of tsv to get
+    #   remove:  list of project that have been created but have not completed submission
+    # 
+    # Returns:
+    #   df representing MTDE counts
+    finalURL <- paste0("https://", username, ":", password,
+                       "@services.bloodpac.org/", tsv)
+    data <- read.table(finalURL, sep='\t', header=T)
+    
+    data <- data[!data$Project %in% remove, ]
+    return(data)
+}
+```
+
+### Import Data 
+
+```{r}
+mtde <- c("hrs.to.fractionation",
+          "storage.temperature", 
+          "analyte.isolation.method", 
+          "shipping.temperature", 
+          "assay.method", 
+          "sample.type", 
+          "quantification.method", 
+          "time.to.freezer",
+          "composition", 
+          "tube.type")
+tsvs <- c("table_hours_to_fractionation.tsv", 
+          "table_storage_temperature.tsv", 
+          "table_analyte_isolation_method.tsv", 
+          "table_shipping_temperature.tsv", 
+          "table_assay_method.tsv", 
+          "table_clinical_or_contrived.tsv", 
+          "table_quantification_assay.tsv", 
+          "table_hours_to_freezer.tsv", 
+          "table_composition.tsv", 
+          "table_blood_tube_type.tsv")
+
+remove <- c("MSKCC_P0001_T1", "PersonalGenome_Beta1", "Novartis_Contrived2_T1")
+
+# get dfs for each MTDE
+for (i in 1:length(mtde)) {
+    assign(mtde[i], GetTsvHelper(tsvs[i], remove))
+}
+```
+
+### Helper: Combine Desired MTDE Counts to Prep for Clustering
+
+```{r}
+SelectAndCombine <- function(list) {
+    # select list of MTDES and prepare for PCA
+    #
+    # Args: 
+    #   list:  list of MTDES to review
+    # 
+    # Returns:
+    #   df ready for PCA
+    df <- data.frame()
+    flag <- TRUE
+    for (i in list) {
+        if (flag) {
+            df <- get(i)
+            flag <- FALSE
+        } else {
+            df <- merge(df, get(i), 
+                        by = c("Organization", "Project"))
+        }
+    }
+    # remove columns strings / no values
+    df <- df[, colSums(df != 0) > 0]
+    data <- df[,-2]
+    rownames(data) <- df[,2]
+    df <- data[,-1]
+    df
+}
+
+```
+
+## Generate MTDE Combinations
+
+```{r}
+comboList <- list()
+for (i in 3:10) {
+    named <- paste0("combo", i)
+    l <- combn(mtde, i)
+    comboList[[named]] <- l
+}
+## expected N choose K result
+#str(comboList)
+```
+
+```{r}
+data <- SelectAndCombine(comboList$combo10[,1])
+```
+
+## Jaccard Distance - Binarize
+
+```{r}
+d <- as.matrix(dist(data, method="binary"))
+datatable(d)
+```
+
+
+```{r, message=F, warning=F}
+set.seed(15)
+
+draw_colnames_45 <- function (coln, gaps, ...) {
+    coord = pheatmap:::find_coordinates(length(coln), gaps)
+    x = coord$coord - 0.5 * coord$size
+    res = textGrob(coln, x = x, y = unit(1, "npc") - unit(3,"bigpts"), vjust = 0.5, hjust = 1, rot = 45, gp = gpar(...))
+    return(res)}
+
+assignInNamespace(x="draw_colnames", value="draw_colnames_45",
+ns=asNamespace("pheatmap"))
+
+pheatmap(d, kmeans_k=5, main="BloodPAC MTDEs:  Project Similarity \n Binary | Jaccard Distance Measure") 
+
+```
