@@ -56,7 +56,8 @@ mtde <- c("hrs.to.fractionation",
           "quantification.method", 
           "time.to.freezer",
           "composition", 
-          "tube.type")
+          "tube.type") #, 
+          #"dna.concentration")
 tsvs <- c("table_hours_to_fractionation.tsv", 
           "table_storage_temperature.tsv", 
           "table_analyte_isolation_method.tsv", 
@@ -66,10 +67,16 @@ tsvs <- c("table_hours_to_fractionation.tsv",
           "table_quantification_assay.tsv", 
           "table_hours_to_freezer.tsv", 
           "table_composition.tsv", 
-          "table_blood_tube_type.tsv")
+          "table_blood_tube_type.tsv") #,
+          #"table_molecular_concentration.tsv")
 
 # removes project for which there are established projects but no submission.
-remove <- c("MSKCC_P0001_T1", "PersonalGenome_Beta1", "Novartis_Contrived2_T1")
+remove <- c("MSKCC_P0001_T1", 
+            "MSKCC_P0002_T1", 
+            "MSKCC_P0003_T1", 
+            "MSKCC_P0004_T1", 
+            "PersonalGenome_Beta1", 
+            "Novartis_Contrived2_T1")
 
 # get dfs for each MTDE
 for (i in 1:length(mtde)) {
@@ -136,5 +143,4 @@ assignInNamespace(x="draw_colnames", value="draw_colnames_45",
 ns=asNamespace("pheatmap"))
 
 pheatmap(d, kmeans_k=5, main="BloodPAC MTDEs:  Project Similarity \n Binary | Jaccard Distance Measure") 
-
 ```
