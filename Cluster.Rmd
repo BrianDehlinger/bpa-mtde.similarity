@@ -130,13 +130,14 @@ datatable(d)
 
 ## Visualize
 
-```{r, message=F, warning=F}
-set.seed(15)
+```{r, message=F, warning=F, fig.align='center'}
+
+set.seed(32)
 
 draw_colnames_45 <- function (coln, gaps, ...) {
     coord = pheatmap:::find_coordinates(length(coln), gaps)
     x = coord$coord - 0.5 * coord$size
-    res = textGrob(coln, x = x, y = unit(1, "npc") - unit(3,"bigpts"), vjust = 0.5, hjust = 1, rot = 45, gp = gpar(...))
+    res = textGrob(coln, x = x, y = unit(1, "npc") - unit(3,"bigpts"), vjust = 0.5, hjust = 1, rot = 60, gp = gpar(...))
     return(res)}
 
 assignInNamespace(x="draw_colnames", value="draw_colnames_45",
