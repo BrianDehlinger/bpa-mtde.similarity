@@ -71,11 +71,9 @@ tsvs <- c("table_hours_to_fractionation.tsv",
           #"table_molecular_concentration.tsv")
 
 # removes project for which there are established projects but no submission.
-remove <- c("MSKCC_P0001_T1", 
-            "MSKCC_P0002_T1", 
+remove <- c("MSKCC_P0002_T1", 
             "MSKCC_P0003_T1", 
             "MSKCC_P0004_T1", 
-            "PersonalGenome_Beta1", 
             "Novartis_Contrived2_T1")
 
 # get dfs for each MTDE
